@@ -8,13 +8,13 @@ def returning(msg):
 
     # for historical events
     today = datetime.date.today()
-    month = today.month
-    day = today.day
-    url = "https://byabbe.se/on-this-day/"+month+"/"+day+"/events.json"
+    month = str(today.month)
+    day = str(today.day)
+    url = f"https://byabbe.se/on-this-day/{month}/{day}/events.json"
     ans = requests.get(url)
     data = ans.json()
-    firstEvent = data["events"][0]
-    lastEvent = data["events"][-1]
+    firstEvent = 0
+    lastEvent = len(data["events"]) -1
 
     # for forecast in Istanbul
     url2 = "https://api.open-meteo.com/v1/forecast?latitude=41.01&longitude=28.97&current_weather=true"
@@ -22,12 +22,15 @@ def returning(msg):
     dataWeather = ansWeather.json()
     weather = dataWeather.get("current_weather",{})
     temp = weather.get("temperature")
-    description = "At the moment weather in Istanbul is "+str(temp)+"°C"
+    description = f"At the moment, weather in Istanbul is {temp}°C."
 
     if "happened" in msg or "history" in msg:
-        return data["events"][randint(firstEvent,lastEvent)]
+        event = data["events"][randint(firstEvent, lastEvent)]
+        return f"In {event['year']}: {event['description']}"
     elif "weather" in msg or "temperature" in msg or "Istanbul" in msg:
         return description
+    else:
+        return "I didn't understand. Try asking about 'history' or 'weather'."
 
 server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 server.bind(('127.0.0.1', 2424))
